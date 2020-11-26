@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "config.h"
 #include "driver.h"
+#define PCAP_BUF_SIZE 1024
 
 static pcap_t *pcap;
 static char pcap_errbuf[PCAP_ERRBUF_SIZE];

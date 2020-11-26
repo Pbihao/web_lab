@@ -1,0 +1,55 @@
+[
+{
+  "directory": "/home/pbihao/Documents/web_lab/net_lab/build",
+  "command": "/usr/bin/x86_64-linux-gnu-gcc-7  -I.././include -I.././pcap  -g   -o CMakeFiles/main.dir/src/arp.c.o   -c /home/pbihao/Documents/web_lab/net_lab/src/arp.c",
+  "file": "/home/pbihao/Documents/web_lab/net_lab/src/arp.c"
+},
+
+{
+  "directory": "/home/pbihao/Documents/web_lab/net_lab/build",
+  "command": "/usr/bin/x86_64-linux-gnu-gcc-7  -I.././include -I.././pcap  -g   -o CMakeFiles/main.dir/src/driver.c.o   -c /home/pbihao/Documents/web_lab/net_lab/src/driver.c",
+  "file": "/home/pbihao/Documents/web_lab/net_lab/src/driver.c"
+},
+
+{
+  "directory": "/home/pbihao/Documents/web_lab/net_lab/build",
+  "command": "/usr/bin/x86_64-linux-gnu-gcc-7  -I.././include -I.././pcap  -g   -o CMakeFiles/main.dir/src/ethernet.c.o   -c /home/pbihao/Documents/web_lab/net_lab/src/ethernet.c",
+  "file": "/home/pbihao/Documents/web_lab/net_lab/src/ethernet.c"
+},
+
+{
+  "directory": "/home/pbihao/Documents/web_lab/net_lab/build",
+  "command": "/usr/bin/x86_64-linux-gnu-gcc-7  -I.././include -I.././pcap  -g   -o CMakeFiles/main.dir/src/icmp.c.o   -c /home/pbihao/Documents/web_lab/net_lab/src/icmp.c",
+  "file": "/home/pbihao/Documents/web_lab/net_lab/src/icmp.c"
+},
+
+{
+  "directory": "/home/pbihao/Documents/web_lab/net_lab/build",
+  "command": "/usr/bin/x86_64-linux-gnu-gcc-7  -I.././include -I.././pcap  -g   -o CMakeFiles/main.dir/src/ip.c.o   -c /home/pbihao/Documents/web_lab/net_lab/src/ip.c",
+  "file": "/home/pbihao/Documents/web_lab/net_lab/src/ip.c"
+},
+
+{
+  "directory": "/home/pbihao/Documents/web_lab/net_lab/build",
+  "command": "/usr/bin/x86_64-linux-gnu-gcc-7  -I.././include -I.././pcap  -g   -o CMakeFiles/main.dir/src/main.c.o   -c /home/pbihao/Documents/web_lab/net_lab/src/main.c",
+  "file": "/home/pbihao/Documents/web_lab/net_lab/src/main.c"
+},
+
+{
+  "directory": "/home/pbihao/Documents/web_lab/net_lab/build",
+  "command": "/usr/bin/x86_64-linux-gnu-gcc-7  -I.././include -I.././pcap  -g   -o CMakeFiles/main.dir/src/net.c.o   -c /home/pbihao/Documents/web_lab/net_lab/src/net.c",
+  "file": "/home/pbihao/Documents/web_lab/net_lab/src/net.c"
+},
+
+{
+  "directory": "/home/pbihao/Documents/web_lab/net_lab/build",
+  "command": "/usr/bin/x86_64-linux-gnu-gcc-7  -I.././include -I.././pcap  -g   -o CMakeFiles/main.dir/src/udp.c.o   -c /home/pbihao/Documents/web_lab/net_lab/src/udp.c",
+  "file": "/home/pbihao/Documents/web_lab/net_lab/src/udp.c"
+},
+
+{
+  "directory": "/home/pbihao/Documents/web_lab/net_lab/build",
+  "command": "/usr/bin/x86_64-linux-gnu-gcc-7  -I.././include -I.././pcap  -g   -o CMakeFiles/main.dir/src/utils.c.o   -c /home/pbihao/Documents/web_lab/net_lab/src/utils.c",
+  "file": "/home/pbihao/Documents/web_lab/net_lab/src/utils.c"
+}
+]

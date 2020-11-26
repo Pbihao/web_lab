@@ -1,0 +1,26 @@
+# ninja log v5
+1	42	0	CMakeFiles/main.dir/src/icmp.c.o	adcc149e4b780682
+0	48	0	CMakeFiles/main.dir/src/arp.c.o	379b5c229fdc20c5
+0	52	0	CMakeFiles/main.dir/src/ethernet.c.o	6224b87ce059d204
+1	52	0	CMakeFiles/main.dir/src/ip.c.o	90c7f530437fe27e
+1	56	0	CMakeFiles/main.dir/src/net.c.o	6a95ab2507f00442
+1	58	0	CMakeFiles/main.dir/src/main.c.o	42f1a335af7f680b
+2	67	0	CMakeFiles/main.dir/src/utils.c.o	96bafe5530a5581e
+2	79	0	CMakeFiles/main.dir/src/udp.c.o	33ca5a0d9a7fa796
+1	40	0	CMakeFiles/main.dir/src/driver.c.o	18eced93b7d1e109
+40	68	0	main	c89fe769248fe7fb
+0	42	0	CMakeFiles/main.dir/src/driver.c.o	18eced93b7d1e109
+43	70	0	main	c89fe769248fe7fb
+0	38	0	CMakeFiles/main.dir/src/driver.c.o	18eced93b7d1e109
+38	62	0	main	c89fe769248fe7fb
+1	57	0	CMakeFiles/main.dir/src/driver.c.o	18eced93b7d1e109
+57	82	0	main	c89fe769248fe7fb
+0	36	0	CMakeFiles/main.dir/src/driver.c.o	18eced93b7d1e109
+36	57	0	main	c89fe769248fe7fb
+1	41	0	CMakeFiles/main.dir/src/driver.c.o	18eced93b7d1e109
+1	45	0	CMakeFiles/main.dir/src/ethernet.c.o	6224b87ce059d204
+45	69	0	main	c89fe769248fe7fb
+1	36	0	CMakeFiles/main.dir/src/ethernet.c.o	6224b87ce059d204
+36	62	0	main	c89fe769248fe7fb
+0	31	0	CMakeFiles/main.dir/src/ethernet.c.o	6224b87ce059d204
+31	53	0	main	c89fe769248fe7fb
