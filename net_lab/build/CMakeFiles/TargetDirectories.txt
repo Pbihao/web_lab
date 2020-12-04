@@ -1,3 +1,0 @@
-/home/pbihao/Documents/web_lab/net_lab/build/CMakeFiles/rebuild_cache.dir
-/home/pbihao/Documents/web_lab/net_lab/build/CMakeFiles/main.dir
-/home/pbihao/Documents/web_lab/net_lab/build/CMakeFiles/edit_cache.dir
