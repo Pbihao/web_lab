@@ -3,6 +3,7 @@
 #include "icmp.h"
 #include "udp.h"
 #include <string.h>
+#include <stdio.h>
 
 /**
  * @brief 处理一个收到的数据包
@@ -23,6 +24,7 @@
  */
 void ip_in(buf_t *buf)
 {
+    //
     // TODO 
     ip_hdr_t ip_head;
     memcpy(&ip_head, buf->data, sizeof(ip_hdr_t));
@@ -34,7 +36,7 @@ void ip_in(buf_t *buf)
     if(!ip_head.version == 0b0100 || ip_head.hdr_len < 5)return;
     uint16_t checksum = ip_head.hdr_checksum;
     memset(buf->data + 10, 0, 2);
-    if(checksum16(buf->data, ip_head.hdr_len * 2) != checksum)return;
+    if(checksum16((uint16_t*)buf->data, ip_head.hdr_len * 2) != checksum)return;
     uint8_t my_ip[4] = DRIVER_IF_IP;
     if(memcmp(ip_head.dest_ip, my_ip, 4))return;
 
@@ -71,7 +73,13 @@ void ip_in(buf_t *buf)
 void ip_fragment_out(buf_t *buf, uint8_t *ip, net_protocol_t protocol, int id, uint16_t offset, int mf)
 {
     // TODO
+
+    // printf("Debug: begin to ip_fragment_out\n");
+
     buf_add_header(buf, 20);
+
+    // for(int i = 0; i < 20; i++)printf("Debug %d\n", buf->data[i]);
+
     ip_hdr_t ip_head;
     ip_head.hdr_len = 5;
     ip_head.version = 0b0100;
@@ -82,16 +90,28 @@ void ip_fragment_out(buf_t *buf, uint8_t *ip, net_protocol_t protocol, int id, u
     ip_head.ttl = 64;
     ip_head.protocol = protocol;
     ip_head.hdr_checksum = 0;
+
+    // printf("Debug: complete ip_head\n");
     
     uint8_t my_ip[4] = DRIVER_IF_IP;
     memcpy(ip_head.src_ip, my_ip, 4);
+
     memcpy(ip_head.dest_ip, ip, 4);
+
+    // printf("Debug: buf->data point %p\n", buf->data);
+    // printf("Debug: buf len %d\n", buf->len);
+
+    memcpy(buf->data, &ip_head, 20);
+
+    // printf("Debug: begin to checksum16\n");
+    
+    ip_head.hdr_checksum = checksum16((uint16_t*)buf->data, 10); ////////////////////////////////////////////////////std forgot to swap
     memcpy(buf->data, &ip_head, 20);
     
-    ip_head.hdr_checksum = swap16(checksum16(buf, 20));
-    memcpy(buf->data, &ip_head, 20);
-    
-    arp_out(buf, ip, protocol);
+
+    // printf("Debug: begin to arp_out\n");
+
+    arp_out(buf, ip, 0x0800);
 }
 
 /**
@@ -118,13 +138,31 @@ void ip_out(buf_t *buf, uint8_t *ip, net_protocol_t protocol)
     // TODO 
     int MAX_LENGTH = ETHERNET_MTU - 20;
     int offest = 0;
-    ip_id += 1;
     while(buf->len > MAX_LENGTH){
+
+        // printf("Debug:  %d\n", buf->len);
+
         buf_init(&rxbuf, MAX_LENGTH);
-        memcpy(&rxbuf.data, buf->data, MAX_LENGTH);
+
+        // printf("Degug: buf_init succeed!\n");
+
+        
+        // for(int i = 0; i < 20; i++)printf("Debug: ip_out %d\n", rxbuf.data[i]);
+        memcpy(rxbuf.data, buf->data, MAX_LENGTH);
+
+        // printf("Degug: memcpy succeed!\n");
+        // printf("Debug: rxbuf.len %d\n", rxbuf.len);
+
         ip_fragment_out(&rxbuf, ip, protocol, ip_id, offest, 1);
+
+        // printf("Degug: ip_fragment_out succeed!\n");
+
         offest += (MAX_LENGTH >> 3);
-        buf_remove_header(&buf, MAX_LENGTH);
+        buf_remove_header(buf, MAX_LENGTH);
     }
+  //  fprintf(stderr, "Debug:protocol %x\n", protocol);
     ip_fragment_out(buf, ip, protocol, ip_id, offest, 0);
+    ip_id += 1;
 }
+//45 00 00 46 00 00 00 00 40 11 1c f3 c0 a8 a3 67 c0 a8 a3 0a
+//45 00 00 46 00 00 00 00 40 11 b2 e4 c0 a8 a3 67 c0 a8 a3 0a
