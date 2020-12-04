@@ -3,5 +3,7 @@
     "files.associations": {
         "atomic": "cpp",
         "cstdint": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": true
+
 }
