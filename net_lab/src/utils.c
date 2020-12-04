@@ -83,5 +83,12 @@ void buf_copy(buf_t *dst, buf_t *src)
 uint16_t checksum16(uint16_t *buf, int len)
 {
     // TODO
-        
+    uint32_t sum = 0;
+    for(int i = 0; i < len; i++){
+        sum += buf[i];
+    }
+    sum = (sum >> 16) + (sum & 0xffff);
+    sum = (sum >> 16) + (sum & 0xffff);
+    sum = ~sum;
+    return sum;
 }

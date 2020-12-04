@@ -24,7 +24,34 @@
 void ip_in(buf_t *buf)
 {
     // TODO 
+    ip_hdr_t ip_head;
+    memcpy(&ip_head, buf->data, sizeof(ip_hdr_t));
+    ip_head.total_len = swap16(ip_head.total_len);
+    ip_head.id = swap16(ip_head.id);
+    ip_head.flags_fragment = swap16(ip_head.flags_fragment);
+    ip_head.hdr_checksum = swap16(ip_head.hdr_checksum);
 
+    if(!ip_head.version == 0b0100 || ip_head.hdr_len < 5)return;
+    uint16_t checksum = ip_head.hdr_checksum;
+    memset(buf->data + 10, 0, 2);
+    if(checksum16(buf->data, ip_head.hdr_len * 2) != checksum)return;
+    uint8_t my_ip[4] = DRIVER_IF_IP;
+    if(memcmp(ip_head.dest_ip, my_ip, 4))return;
+
+    
+    switch(ip_head.protocol){
+        case NET_PROTOCOL_ICMP:
+        buf_remove_header(buf, ip_head.hdr_len * 4);
+        icmp_in(buf, ip_head.src_ip);
+        break;
+        case NET_PROTOCOL_UDP:
+        buf_remove_header(buf, ip_head.hdr_len * 4);
+        udp_in(buf, ip_head.src_ip);
+        break;
+        default:
+        icmp_unreachable(buf, ip_head.src_ip, ICMP_CODE_PROTOCOL_UNREACH);
+        break;
+    }
 }
 
 /**
@@ -44,7 +71,27 @@ void ip_in(buf_t *buf)
 void ip_fragment_out(buf_t *buf, uint8_t *ip, net_protocol_t protocol, int id, uint16_t offset, int mf)
 {
     // TODO
+    buf_add_header(buf, 20);
+    ip_hdr_t ip_head;
+    ip_head.hdr_len = 5;
+    ip_head.version = 0b0100;
+    ip_head.tos = 0;
+    ip_head.total_len = swap16(buf->len);
+    ip_head.id = swap16(id);
+    ip_head.flags_fragment = swap16(((offset << 3) >> 3) | (mf << 13));
+    ip_head.ttl = 64;
+    ip_head.protocol = protocol;
+    ip_head.hdr_checksum = 0;
     
+    uint8_t my_ip[4] = DRIVER_IF_IP;
+    memcpy(ip_head.src_ip, my_ip, 4);
+    memcpy(ip_head.dest_ip, ip, 4);
+    memcpy(buf->data, &ip_head, 20);
+    
+    ip_head.hdr_checksum = swap16(checksum16(buf, 20));
+    memcpy(buf->data, &ip_head, 20);
+    
+    arp_out(buf, ip, protocol);
 }
 
 /**
@@ -59,14 +106,25 @@ void ip_fragment_out(buf_t *buf, uint8_t *ip, net_protocol_t protocol, int id, u
  *             调用buf_init()函数初始化buf，长度为该分片大小，再调用ip_fragment_out()函数发送出去
  *             注意：id为IP数据报的分片标识，从0开始编号，每增加一个分片，自加1。最后一个分片的MF = 0
  *    
- *        如果没有超过以太网帧的最大包长，则直接调用调用ip_fragment_out()函数发送出去。
+ *        如果没有超过以太网帧的最大包长，则直接调用调用ip_fragment_out()函数发送出去。r
  * 
  * @param buf 要处理的包
  * @param ip 目标ip地址
  * @param protocol 上层协议
  */
+uint16_t ip_id = 0x00;
 void ip_out(buf_t *buf, uint8_t *ip, net_protocol_t protocol)
 {
     // TODO 
-    
+    int MAX_LENGTH = ETHERNET_MTU - 20;
+    int offest = 0;
+    ip_id += 1;
+    while(buf->len > MAX_LENGTH){
+        buf_init(&rxbuf, MAX_LENGTH);
+        memcpy(&rxbuf.data, buf->data, MAX_LENGTH);
+        ip_fragment_out(&rxbuf, ip, protocol, ip_id, offest, 1);
+        offest += (MAX_LENGTH >> 3);
+        buf_remove_header(&buf, MAX_LENGTH);
+    }
+    ip_fragment_out(buf, ip, protocol, ip_id, offest, 0);
 }
