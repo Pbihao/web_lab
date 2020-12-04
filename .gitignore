@@ -1,3 +1,3 @@
-.idea/*
-.vscode/*
-build/
+web_lab/idea/*
+web_lab/vscode/*
+web_lab/build/
