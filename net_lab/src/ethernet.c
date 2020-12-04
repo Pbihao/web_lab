@@ -19,6 +19,7 @@ void ethernet_in(buf_t *buf)
 {
     // TODO
     //arp
+    
     if(buf->data[12] == 0x08 && buf->data[13] == 0x06){
         buf_remove_header(buf, 14);
         arp_in(buf);

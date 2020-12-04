@@ -31,16 +31,21 @@ void ip_in(buf_t *buf)
     ip_head.total_len = swap16(ip_head.total_len);
     ip_head.id = swap16(ip_head.id);
     ip_head.flags_fragment = swap16(ip_head.flags_fragment);
-    ip_head.hdr_checksum = swap16(ip_head.hdr_checksum);
+
+    // fprintf(stderr, "Debug: id->1\n");
 
     if(!ip_head.version == 0b0100 || ip_head.hdr_len < 5)return;
-    uint16_t checksum = ip_head.hdr_checksum;
+    
     memset(buf->data + 10, 0, 2);
-    if(checksum16((uint16_t*)buf->data, ip_head.hdr_len * 2) != checksum)return;
+    if(checksum16((uint16_t*)buf->data, ip_head.hdr_len * 2) != ip_head.hdr_checksum)return;
+    buf->data[10] = ip_head.hdr_checksum & 0xff;
+    buf->data[11] = ip_head.hdr_checksum >> 8;
+    
     uint8_t my_ip[4] = DRIVER_IF_IP;
+    //  fprintf(stderr, "Debug: id->3\n");
     if(memcmp(ip_head.dest_ip, my_ip, 4))return;
 
-    
+    //  fprintf(stderr, "Debug: protocol -> %d\n", ip_head.protocol);
     switch(ip_head.protocol){
         case NET_PROTOCOL_ICMP:
         buf_remove_header(buf, ip_head.hdr_len * 4);
