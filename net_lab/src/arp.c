@@ -1,9 +1,9 @@
-#include "arp.h"
 #include "utils.h"
 #include "ethernet.h"
 #include "config.h"
 #include <string.h>
 #include <stdio.h>
+#include "arp.h"
 
 /**
  * @brief 初始的arp包
@@ -45,7 +45,20 @@ arp_buf_t arp_buf;
 void arp_update(uint8_t *ip, uint8_t *mac, arp_state_t state)
 {
     // TODO
+    time_t now_time;
+    now_time = time(NULL);
+    struct arp_entry* item = &arp_table[0];
+    for(int i = 0; i < ARP_MAX_ENTRY; i++){
+        if(arp_table[i].state == ARP_VALID && now_time - arp_table[i].timeout >= ARP_TIMEOUT_SEC){
+            arp_table[i].state = ARP_INVALID;
+        }
+        if(arp_table[i].timeout < item->timeout || arp_table[i].state == ARP_INVALID)item = &arp_table[i];
+    }
 
+    memcpy(item->ip, ip, 4);
+    memcpy(item->mac, mac, 6);
+    item->timeout = now_time;
+    item->state = state;
 }
 
 /**
@@ -63,6 +76,15 @@ static uint8_t *arp_lookup(uint8_t *ip)
 }
 
 /**
+ * used for print buffer info for debug
+*/
+void print_buf(buf_t* buf){
+    fprintf(stderr, "Debug: ");
+    for(int i = 0; i < buf->len; i++)fprintf(stderr, "%02x ", buf->data[i]);
+    fprintf(stderr, "\n");
+}
+
+/**
  * @brief 发送一个arp请求
  *        你需要调用buf_init对txbuf进行初始化
  *        填写ARP报头，将ARP的opcode设置为ARP_REQUEST，注意大小端转换
@@ -73,7 +95,25 @@ static uint8_t *arp_lookup(uint8_t *ip)
 static void arp_req(uint8_t *target_ip)
 {
     // TODO
+    // fprintf(stderr, "debug: ");
+    // for(int i = 0; i < 4; i++)fprintf(stderr, "%d.", target_ip[i]);
+    // fprintf(stderr, "\n");
 
+    buf_init(&rxbuf, 28);
+    
+    arp_pkt_t arp = arp_init_pkt;
+
+    // fprintf(stderr, "Debug:arp_pkt  ");
+    // for(int i = 0; i < 4; i++)fprintf(stderr, "%d ", arp.sender_ip[i]);
+    // fprintf(stderr, "\n");
+
+    memcpy(arp.target_ip, target_ip, 4);
+    arp.opcode = swap16(ARP_REQUEST);
+    memcpy(rxbuf.data, &arp, sizeof(arp_pkt_t));
+
+    //print_buf(&rxbuf);
+
+    ethernet_out(&rxbuf, ether_broadcast_mac, NET_PROTOCOL_ARP);
 }
 
 /**
@@ -96,7 +136,43 @@ static void arp_req(uint8_t *target_ip)
 void arp_in(buf_t *buf)
 {
     // TODO
+
+    arp_pkt_t received;
+    memcpy(&received, buf->data, 28);
+    if(received.hw_type != arp_init_pkt.hw_type || received.hw_len != arp_init_pkt.hw_len || 
+    received.pro_len != arp_init_pkt.pro_len){
+        return;
+    }
+
+    received.hw_type = swap16(received.hw_type);
+    received.pro_type = swap16(received.pro_type);
+    received.opcode = swap16(received.opcode);
+
+    // fprintf(stderr, "Debug: arp_in  ");
+    // for(int i = 0; i < buf->len; i++)fprintf(stderr, "%02x ", buf->data[i]);
+    // fprintf(stderr, "\n");
+
+    // fprintf(stderr, "Debug: arp_in  ");
+    // for(int i = 0; i < arp_buf.buf.len; i++)fprintf(stderr, "%02x ", arp_buf.buf.data[i]);
+    // fprintf(stderr, "\n");
+
+    arp_update(received.sender_ip, received.sender_mac, ARP_VALID);
+
+    if(arp_buf.valid == 1 && memcmp(arp_buf.ip, received.sender_ip, 4) == 0){
+        arp_out(&arp_buf.buf, arp_buf.ip, arp_buf.protocol);
+        arp_buf.valid = 0;
+    }
+
+    if(received.opcode == ARP_REQUEST && memcmp(received.target_ip, arp_init_pkt.sender_ip, 4) == 0){
+        buf_init(&rxbuf, 28);
     
+        arp_pkt_t arp = arp_init_pkt;
+        memcpy(arp.target_ip, received.sender_ip, 4);
+        memcpy(arp.target_mac, received.sender_mac, 6);
+        arp.opcode = swap16(ARP_REPLY);
+        memcpy(rxbuf.data, &arp, sizeof(arp_pkt_t));
+        ethernet_out(&rxbuf, received.sender_mac, NET_PROTOCOL_ARP);
+    }
 }
 
 /**
@@ -113,7 +189,16 @@ void arp_in(buf_t *buf)
 void arp_out(buf_t *buf, uint8_t *ip, net_protocol_t protocol)
 {
     // TODO
-
+    uint8_t* mac = arp_lookup(ip);
+    if(mac == NULL){
+        memcpy(arp_buf.ip, ip, 4);
+        arp_buf.buf = *buf;/////////////////////////////////////////////////////////////////////////////
+        arp_buf.protocol = protocol;
+        arp_buf.valid = 1;
+        arp_req(ip);
+        return;
+    }
+    ethernet_out(buf, mac, protocol);
 }
 
 /**

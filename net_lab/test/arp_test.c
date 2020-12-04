@@ -61,6 +61,11 @@ int main(){
                         buf_remove_header(&buf2, sizeof(ether_hdr_t));
                         uint8_t * ip = buf.data + 30;
                         net_protocol_t pro = buf.data[13] ? NET_PROTOCOL_ARP : NET_PROTOCOL_IP;
+
+                        // fprintf(stderr, "Debug: int_test  ");
+                        // for(int i = 0; i < buf2.len; i++)fprintf(stderr, "%02x ", buf2.data[i]);
+                        // fprintf(stderr, "\n");
+
                         arp_out(&buf2,ip,pro);
                 }else{
                         ethernet_in(&buf);

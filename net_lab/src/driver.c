@@ -20,7 +20,7 @@ int driver_open()
     // 根据DRIVER_IF_NAME网卡名，获取网卡的网络号net和子网掩码mask
     if (pcap_lookupnet(DRIVER_IF_NAME, &net, &mask, pcap_errbuf) == -1) //查找网卡
     {
-        fprintf(stderr, "Error in pcap_lookupnet: %s\n", pcap_geterr(pcap));
+      //  fprintf(stderr, "Error in pcap_lookupnet: %s\n", pcap_geterr(pcap));
         return -1;
     }
 
@@ -92,7 +92,7 @@ int driver_recv(buf_t *buf)
  * @return int 成功为0，失败为-1
  */
 int driver_send(buf_t *buf)
-{
+{   
     // 将数据包发往指定的网卡接口
     if (pcap_sendpacket(pcap, buf->data, buf->len) == -1)
     {

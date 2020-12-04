@@ -17,6 +17,9 @@ typedef enum arp_state
     ARP_INVALID, //无效
 } arp_state_t;
 
+/*
+ * arp缓存表中的内容，存的是一个ip对应的一个mac的物理地址
+ */
 typedef struct arp_entry
 {
     arp_state_t state;        //状态
@@ -32,6 +35,10 @@ typedef struct arp_buf
     uint8_t ip[NET_IP_LEN];  //目的ip地址
     net_protocol_t protocol; //上层协议
 } arp_buf_t;
+
+/**
+ * arp报文信息
+ */ 
 
 #pragma pack(1)
 typedef struct arp_pkt

@@ -3,6 +3,7 @@
 #include "driver.h"
 #include "arp.h"
 #include "ip.h"
+#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -41,12 +42,16 @@ void ethernet_out(buf_t *buf, const uint8_t *mac, net_protocol_t protocol)
     // TODO
     
     buf_add_header(buf, 14);
-    for(int i = 0 ; i< 6; i++)buf->data[i] = mac[i];
+    memcpy(buf->data, mac, 6);
     uint8_t src_mac_addr[6] = DRIVER_IF_MAC;
-    for(int i = 6; i < 12; i++)buf->data[i] = src_mac_addr[i - 6];
+    memcpy(buf->data + 6, src_mac_addr, 6);
     buf->data[12] = protocol >> 8;
     buf->data[13] = protocol & 0xff;
     
+    // fprintf(stderr, "Debug: ethernet_out  ");
+    // for(int i = 0; i < buf->len; i++)fprintf(stderr, "%02x ", buf->data[i]);
+    // fprintf(stderr, "\n");
+
     driver_send(buf);
 }
 
