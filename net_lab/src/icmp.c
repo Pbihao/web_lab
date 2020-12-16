@@ -85,9 +85,9 @@ void icmp_unreachable(buf_t *recv_buf, uint8_t *src_ip, icmp_code_t code)
     sd.checksum = checksum16((uint16_t*)txbuf.data, 36);
     memcpy(txbuf.data, &sd, 8);
 
-    fprintf(stderr, "Debug: ");
-    for(int i = 0; i < txbuf.len; i++)fprintf(stderr, "%02x ", txbuf.data[i]);
-    fprintf(stderr, "\n");
+    // fprintf(stderr, "Debug: ");
+    // for(int i = 0; i < txbuf.len; i++)fprintf(stderr, "%02x ", txbuf.data[i]);
+    // fprintf(stderr, "\n");
 
     ip_out(&txbuf, src_ip, NET_PROTOCOL_ICMP);
 }

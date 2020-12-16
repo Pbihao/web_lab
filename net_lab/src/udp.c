@@ -29,7 +29,41 @@ static udp_entry_t udp_table[UDP_MAX_HANDLER];
 static uint16_t udp_checksum(buf_t *buf, uint8_t *src_ip, uint8_t *dest_ip)
 {
     // TODO
-    
+    buf_add_header(buf, 12);
+    uint8_t buff_ip[12];
+    memcpy(buff_ip, buf->data, 12);
+
+    udp_peso_hdr_t ip_head;
+    memcpy(ip_head.src_ip, src_ip, 4);
+    memcpy(ip_head.dest_ip, dest_ip, 4);
+
+    ip_head.placeholder = 0;
+    ip_head.protocol = 0x11;
+
+    ip_head.total_len = swap16(buf->len - 12); ////////////////////////swap?sub 12?////////////////////////
+
+    uint8_t src_sum[2];
+    memcpy(src_sum, buf->data + 18, 2);
+    memset(buf->data + 18, 0, 2);
+    memcpy(buf->data, &ip_head, 12);
+
+    uint16_t* p = (uint16_t*)buf->data;
+    uint32_t sum = 0;
+    for(int i = 0; i < buf->len / 2; i++){
+        sum += p[i];
+    }
+
+    if(buf->len % 2)sum += buf->data[buf->len - 1];
+
+    sum = (sum >> 16) + (sum & 0xffff);
+    sum = (sum >> 16) + (sum & 0xffff);
+    sum = ~sum;
+
+    memcpy(buf->data + 18, src_sum, 2);
+    memcpy(buf->data, buff_ip, 12);
+    buf_remove_header(buf, 12);
+
+    return sum;
 }
 
 /**
@@ -54,6 +88,34 @@ void udp_in(buf_t *buf, uint8_t *src_ip)
 {
     // TODO
 
+    fprintf(stderr, "Debug: udp in\n");
+    fprintf(stderr, "Debug: Ip is ->\n");
+    for(int i = 0; i < 4; i++)
+    fprintf(stderr, " %x", src_ip[i]);
+    fprintf(stderr, " \n");
+
+    if(buf->len < 8)return;
+    udp_hdr_t udp_head;
+    memcpy(&udp_head, buf->data, 8);
+    uint8_t my_ip[4] = DRIVER_IF_IP;
+    if(udp_head.checksum != udp_checksum(buf, src_ip, my_ip))return;
+    udp_head.total_len = swap16(udp_head.total_len);
+    udp_head.src_port = swap16(udp_head.src_port);
+    udp_head.dest_port = swap16(udp_head.dest_port);
+
+    int ok = 0;
+    for(int i = 0; i < UDP_MAX_HANDLER; i++){
+        if(udp_table[i].port == udp_head.dest_port){
+            ok = 1;
+            buf_remove_header(buf, 8);
+            udp_table[i].handler(&udp_table[i], src_ip, udp_head.src_port, buf);
+            break;
+        }
+    }
+    if(!ok){
+        buf_add_header(buf, 8);
+        icmp_unreachable(buf, src_ip, ICMP_CODE_PORT_UNREACH);
+    }
 }
 
 /**
@@ -71,7 +133,20 @@ void udp_in(buf_t *buf, uint8_t *src_ip)
 void udp_out(buf_t *buf, uint16_t src_port, uint8_t *dest_ip, uint16_t dest_port)
 {
     // TODO
+    fprintf(stderr, "Debug: udp out\n");
+    buf_add_header(buf, 8);
+    udp_hdr_t udp_head;
+    udp_head.src_port = swap16(src_port);
+    udp_head.dest_port = swap16(dest_port);
+    udp_head.total_len = swap16(buf->len);
+    uint8_t src_ip[4] = DRIVER_IF_IP;
+    udp_head.checksum = 0;
+    
+    memcpy(buf->data, &udp_head, 12);
+    udp_head.checksum = udp_checksum(buf, src_ip, dest_ip);
+    memcpy(buf->data, &udp_head, 12);
 
+    ip_out(buf, dest_ip, NET_PROTOCOL_UDP);
 }
 
 /**
@@ -139,3 +214,6 @@ void udp_send(uint8_t *data, uint16_t len, uint16_t src_port, uint8_t *dest_ip, 
     memcpy(txbuf.data, data, len);
     udp_out(&txbuf, src_port, dest_ip, dest_port);
 }
+
+
+

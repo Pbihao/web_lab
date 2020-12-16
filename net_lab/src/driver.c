@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "config.h"
 #include "driver.h"
+#include "stdio.h"
 #define PCAP_BUF_SIZE 1024
 
 static pcap_t *pcap;
@@ -20,7 +21,9 @@ int driver_open()
     // 根据DRIVER_IF_NAME网卡名，获取网卡的网络号net和子网掩码mask
     if (pcap_lookupnet(DRIVER_IF_NAME, &net, &mask, pcap_errbuf) == -1) //查找网卡
     {
-      //  fprintf(stderr, "Error in pcap_lookupnet: %s\n", pcap_geterr(pcap));
+        //fprintf(stderr, "Error in pcap_lookupnet: %s\n", pcap_geterr(pcap));
+        //fprintf(stderr, "Debug:");
+        //printf("%s\n", pcap_geterr(pcap));
         return -1;
     }
 
