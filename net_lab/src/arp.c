@@ -28,7 +28,7 @@ arp_entry_t arp_table[ARP_MAX_ENTRY];
  * @brief 长度为1的arp分组队列，当等待arp回复时暂存未发送的数据包
  * 
  */
-arp_buf_t arp_buf;
+arp_buf_t arp_buf[2];
 
 /**
  * @brief 更新arp表
@@ -158,9 +158,14 @@ void arp_in(buf_t *buf)
 
     arp_update(received.sender_ip, received.sender_mac, ARP_VALID);
 
-    if(arp_buf.valid == 1 && memcmp(arp_buf.ip, received.sender_ip, 4) == 0){
-        arp_out(&arp_buf.buf, arp_buf.ip, arp_buf.protocol);
-        arp_buf.valid = 0;
+    if(arp_buf[0].valid == 1 && memcmp(arp_buf[0].ip, received.sender_ip, 4) == 0){
+        arp_out(&arp_buf[0].buf, arp_buf[0].ip, arp_buf[0].protocol);
+        arp_buf[0].valid = 0;
+    }
+
+    if(arp_buf[1].valid == 1 && memcmp(arp_buf[1].ip, received.sender_ip, 4) == 0){
+        arp_out(&arp_buf[1].buf, arp_buf[1].ip, arp_buf[1].protocol);
+        arp_buf[1].valid = 0;
     }
 
     if(received.opcode == ARP_REQUEST && memcmp(received.target_ip, arp_init_pkt.sender_ip, 4) == 0){
@@ -191,13 +196,24 @@ void arp_out(buf_t *buf, uint8_t *ip, net_protocol_t protocol)
     // TODO
     uint8_t* mac = arp_lookup(ip);
     if(mac == NULL){
-        memcpy(arp_buf.ip, ip, 4);
-        arp_buf.buf = *buf;/////////////////////////////////////////////////////////////////////////////
-        arp_buf.protocol = protocol;
-        arp_buf.valid = 1;
+        
+        if(!arp_buf[0].valid){
+            memcpy(arp_buf[0].ip, ip, 4);
+            arp_buf[0].buf = *buf;/////////////////////////////////////////////////////////////////////////////
+            arp_buf[0].protocol = protocol;
+            arp_buf[0].valid = 1;
+        }else{
+            memcpy(arp_buf[1].ip, ip, 4);
+            arp_buf[1].buf = *buf;/////////////////////////////////////////////////////////////////////////////
+            arp_buf[1].protocol = protocol;
+            arp_buf[1].valid = 1;
+        }
+        
         arp_req(ip);
         return;
+        
     }
+    // fprintf(stderr, "Debug: begin to ethernet out");
     ethernet_out(buf, mac, protocol);
 }
 
@@ -209,6 +225,6 @@ void arp_init()
 {
     for (int i = 0; i < ARP_MAX_ENTRY; i++)
         arp_table[i].state = ARP_INVALID;
-    arp_buf.valid = 0;
+    arp_buf[0].valid = arp_buf[1].valid =  0;
     arp_req(net_if_ip);
 }

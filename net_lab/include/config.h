@@ -12,14 +12,14 @@
 //         0x11, 0x22, 0x33, 0x44, 0x55, 0x66 \
 //     }                     //自定义网卡mac地址
 
-#define DRIVER_IF_NAME "wlp2s0" //使用的物理网卡名称
+#define DRIVER_IF_NAME "ens33" //使用的物理网卡名称
 #define DRIVER_IF_IP      \
     {                     \
-        10, 250, 134, 79 \
+        192, 168, 133, 131 \
     } //自定义网卡ip地址
 #define DRIVER_IF_MAC                      \
     {                                      \
-        0x14, 0x4f, 0x8a, 0x7b, 0x94, 0x4f \
+        0x00, 0x0c, 0x29, 0x34, 0xbc, 0x41 \
     } 
 
 #define ETHERNET_MTU 1500 //以太网最大传输单元

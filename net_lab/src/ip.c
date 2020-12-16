@@ -26,6 +26,8 @@ void ip_in(buf_t *buf)
 {
     //
     // TODO 
+    
+
     ip_hdr_t ip_head;
     memcpy(&ip_head, buf->data, sizeof(ip_hdr_t));
     ip_head.total_len = swap16(ip_head.total_len);
@@ -52,6 +54,11 @@ void ip_in(buf_t *buf)
         icmp_in(buf, ip_head.src_ip);
         break;
         case NET_PROTOCOL_UDP:
+
+        // printf("Debug:");
+        // for(int i = 0; i < buf->len; i++)printf("%x ", buf->data[i]);
+        // printf("\n");
+
         buf_remove_header(buf, ip_head.hdr_len * 4);
         udp_in(buf, ip_head.src_ip);
         break;
@@ -79,7 +86,7 @@ void ip_fragment_out(buf_t *buf, uint8_t *ip, net_protocol_t protocol, int id, u
 {
     // TODO
 
-    // printf("Debug: begin to ip_fragment_out\n");
+    // fprintf(stderr, "Debug: begin to ip_fragment_out\n");
 
     buf_add_header(buf, 20);
 

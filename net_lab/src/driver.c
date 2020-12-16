@@ -97,6 +97,7 @@ int driver_recv(buf_t *buf)
 int driver_send(buf_t *buf)
 {   
     // 将数据包发往指定的网卡接口
+    // fprintf(stderr,"Debug: drive send\n");
     if (pcap_sendpacket(pcap, buf->data, buf->len) == -1)
     {
         fprintf(stderr, "Error in driver_send: %s\n", pcap_geterr(pcap));
